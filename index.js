@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 // Get playing state:
 // adb shell dumpsys media_session
 // State 3 is playing, state 2 is pasued.
