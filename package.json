@@ -1,0 +1,23 @@
+{
+  "name": "firetv-autoplay",
+  "version": "0.0.0-development",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "semantic-release": "semantic-release"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "adbkit": "^2.11.0",
+    "commander": "^2.17.1",
+    "inquirer": "^6.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/octalmage/firetv-autoplay.git"
+  },
+  "devDependencies": {
+    "semantic-release": "^15.9.8"
+  }
+}
