@@ -85,10 +85,22 @@ const playIfNotPlaying = (client, device) => getPlayingState(client, device)
   return state;
 });
 
-const getPlayingState = (client, device) => client.shell(device.id, 'dumpsys audio')
+const getPlayingState = (client, device) => getCurrentApp(client, device)
 // Use the readAll() utility to read all the content without
 // having to deal with the events. `output` will be a Buffer
 // containing all the output.
+.then(({ device, app }) => {
+  switch(app) {
+    case 'com.netflix.ninja':
+      return getPlayingStateNetflix(client, device);
+    case 'com.hulu.plus':
+      return getPlayingStateHulu(client, device);
+    default:
+      return { device, state: 0 };
+  }
+});
+
+const getPlayingStateHulu = (client, device) => client.shell(device.id, 'dumpsys audio')
 .then(adb.util.readAll)
 .then(function(output) {
   const matches = /\(last is top of stack\):\s  source:(.*\n)\s Notify on duck: true/g.exec(output);
@@ -96,6 +108,19 @@ const getPlayingState = (client, device) => client.shell(device.id, 'dumpsys aud
   if (matches) {
     state = 3
   }
+
+  return { device, state };
+});
+
+const getPlayingStateNetflix = (client, device) => client.shell(device.id, 'dumpsys media_session')
+.then(adb.util.readAll)
+.then(function(output) {
+  const matches = /state=PlaybackState.*state=(\d)/gm.exec(output);
+  let state = 0;
+  if (matches) {
+    state = parseInt(matches[1])
+  }
+
   return { device, state };
 });
 
@@ -106,3 +131,14 @@ const pressPlay = (client, device) => client.shell(device.id, 'input keyevent 85
 const pressTrackball = (client, device) => client.shell(device.id, 'input press')
 .then(adb.util.readAll) // Wait for event to close.
 .then(() => { device });
+
+const getCurrentApp = (client, device) => client.shell(device.id, 'dumpsys activity activities')
+.then(adb.util.readAll)
+.then(function(output) {
+  const matches = /mFocusedActivity:.*(com\..*)\//g.exec(output);
+  let app;
+  if (matches) {
+    app = matches[1];
+  }
+  return { device, app };
+});
