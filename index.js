@@ -83,16 +83,16 @@ const playIfNotPlaying = (client, device) => getPlayingState(client, device)
   return state;
 });
 
-const getPlayingState = (client, device) => client.shell(device.id, 'dumpsys media_session')
+const getPlayingState = (client, device) => client.shell(device.id, 'dumpsys audio')
 // Use the readAll() utility to read all the content without
 // having to deal with the events. `output` will be a Buffer
 // containing all the output.
 .then(adb.util.readAll)
 .then(function(output) {
-  const matches = /state=PlaybackState.*state=(\d)/gm.exec(output);
-  let state = 0;
+  const matches = /\(last is top of stack\):\s  source:(.*\n)\s Notify on duck: true/g.exec(output);
+  let state = 1;
   if (matches) {
-    state = parseInt(matches[1])
+    state = 3
   }
   return { device, state };
 });
