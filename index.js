@@ -56,6 +56,8 @@ client.listDevices()
       const id = answers['device'];
       return devices.filter(device => { return device.id == id; })[0];
     });
+  } else {
+    throw new Error('No devices found.');
   }
 })
 .then(device => loop(Promise.resolve(), () => playIfNotPlaying(client, device).then(sleep(5000))))
