@@ -103,6 +103,6 @@ const pressPlay = (client, device) => client.shell(device.id, 'input keyevent 85
 .then(adb.util.readAll) // Wait for event to close.
 .then(() => { device });
 
-const pressTrackball = (client, device) => client.shell(device.id, 'input keyevent 85')
+const pressTrackball = (client, device) => client.shell(device.id, 'input press')
 .then(adb.util.readAll) // Wait for event to close.
 .then(() => { device });
