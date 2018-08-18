@@ -74,10 +74,10 @@ function loop(promise, fn) {
 const playIfNotPlaying = (client, device) => getPlayingState(client, device)
 .then(({ state, device }) => {
   if (state === 0) {
-    console.log('Unknown state.');
+    console.log('Unknown state');
     return state;
   } if (state !== 3) {
-    console.log('Paused, pressing play.');
+    console.log('Paused, pressing play');
     return pressTrackball(client, device)
     .then(() => state);
   }
