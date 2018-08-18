@@ -76,7 +76,7 @@ const playIfNotPlaying = (client, device) => getPlayingState(client, device)
     return state;
   } if (state !== 3) {
     console.log('Paused, pressing play.');
-    return pressPlay(client, device)
+    return pressTrackball(client, device)
     .then(() => state);
   }
   console.log('Playing');
@@ -98,5 +98,9 @@ const getPlayingState = (client, device) => client.shell(device.id, 'dumpsys med
 });
 
 const pressPlay = (client, device) => client.shell(device.id, 'input keyevent 85')
+.then(adb.util.readAll) // Wait for event to close.
+.then(() => { device });
+
+const pressTrackball = (client, device) => client.shell(device.id, 'input keyevent 85')
 .then(adb.util.readAll) // Wait for event to close.
 .then(() => { device });
