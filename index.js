@@ -12,8 +12,10 @@ const client = adb.createClient();
 const program = require('commander');
 const inquirer = require('inquirer');
 const pjson = require('./package.json');
+const Logger = require('./logger');
 
 let ip;
+const log = new Logger();
 
 program
   .version(pjson.version)
@@ -74,14 +76,14 @@ function loop(promise, fn) {
 const playIfNotPlaying = (client, device) => getPlayingState(client, device)
 .then(({ state, device }) => {
   if (state === 0) {
-    console.log('Unknown state');
+    log.log('Unknown state');
     return state;
   } if (state !== 3) {
-    console.log('Paused, pressing play');
+    log.log('Paused, pressing play');
     return pressTrackball(client, device)
     .then(() => state);
   }
-  console.log('Playing');
+  log.log('Playing');
   return state;
 });
 
