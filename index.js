@@ -110,9 +110,8 @@ const getPlayingState = (client, device) => getCurrentApp(client, device)
 const getPlayingStateHulu = (client, device) => client.shell(device.id, 'dumpsys audio')
 .then(adb.util.readAll)
 .then(function(output) {
-  const matches = /\(last is top of stack\):\s  source:(.*\n)\s Notify on duck: true/g.exec(output);
   let state = PLAYSTATE_PAUSED;
-  if (matches) {
+  if (output.includes('source:android.os.BinderProxy')) {
     state = PLAYSTATE_PLAYING
   }
 
