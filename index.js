@@ -1,12 +1,4 @@
 #!/usr/bin/env node
-// Get playing state:
-// adb shell dumpsys media_session
-// State 3 is playing, state 2 is pasued.
-// Reference: https://developer.android.com/reference/android/media/AudioTrack#PLAYSTATE_PLAYING
-
-// Play a paused video:
-// adb shell input keyevent 85
-
 const adb = require('adbkit');
 const client = adb.createClient();
 const program = require('commander');
@@ -16,6 +8,9 @@ const Logger = require('./logger');
 
 let ip;
 const log = new Logger();
+const PLAYSTATE_UNKNOWN = 0;
+const PLAYSTATE_PAUSED = 2;
+const PLAYSTATE_PLAYING = 3;
 
 program
   .version(pjson.version)
@@ -62,7 +57,7 @@ client.listDevices()
     throw new Error('No devices found.');
   }
 })
-.then(device => loop(Promise.resolve(), () => playIfNotPlaying(client, device).then(sleep(5000))))
+.then(device => loop(Promise.resolve(), () => playIfNotPlaying(client, device).then(sleep(1000))))
 .catch(function(err) {
   console.error('Something went wrong:', err.stack)
 })
@@ -73,17 +68,27 @@ function loop(promise, fn) {
   });
 }
 
+// Get playing state:
+// State 3 is playing, state 2 is pasued.
+// Reference: https://developer.android.com/reference/android/media/AudioTrack#PLAYSTATE_PLAYING
 const playIfNotPlaying = (client, device) => getPlayingState(client, device)
 .then(({ state, device }) => {
-  if (state === 0) {
-    log.log('Unknown state');
+  if (state === PLAYSTATE_UNKNOWN) {
+    log.info('Unknown state');
     return state;
-  } if (state !== 3) {
-    log.log('Paused, pressing play');
-    return pressTrackball(client, device)
-    .then(() => state);
+  } if (state !== PLAYSTATE_PLAYING) {
+    log.info('Paused, waiting for 5 seconds before pressing play');
+    return sleep(5000)()
+    .then(() => getPlayingState(client, device))
+    .then(({ state }) => {
+      if (state !== PLAYSTATE_PLAYING) {
+        log.info('Paused, pressing play');
+        return pressTrackball(client, device)
+        .then(() => state);
+      }
+    });
   }
-  log.log('Playing');
+  log.info('Playing');
   return state;
 });
 
@@ -98,7 +103,7 @@ const getPlayingState = (client, device) => getCurrentApp(client, device)
     case 'com.hulu.plus':
       return getPlayingStateHulu(client, device);
     default:
-      return { device, state: 0 };
+      return { device, state: STATE_UNKNOWN };
   }
 });
 
@@ -106,9 +111,9 @@ const getPlayingStateHulu = (client, device) => client.shell(device.id, 'dumpsys
 .then(adb.util.readAll)
 .then(function(output) {
   const matches = /\(last is top of stack\):\s  source:(.*\n)\s Notify on duck: true/g.exec(output);
-  let state = 1;
+  let state = PLAYSTATE_PAUSED;
   if (matches) {
-    state = 3
+    state = PLAYSTATE_PLAYING
   }
 
   return { device, state };
@@ -118,7 +123,7 @@ const getPlayingStateNetflix = (client, device) => client.shell(device.id, 'dump
 .then(adb.util.readAll)
 .then(function(output) {
   const matches = /state=PlaybackState.*state=(\d)/gm.exec(output);
-  let state = 0;
+  let state = PLAYSTATE_UNKNOWN;
   if (matches) {
     state = parseInt(matches[1])
   }

@@ -3,7 +3,7 @@ module.exports = class Logger {
     this.previousLine = '';
   }
 
-  log(text) {
+  info(text) {
     if (this.previousLine !== text) {
       console.log(text);
       this.previousLine = text;
