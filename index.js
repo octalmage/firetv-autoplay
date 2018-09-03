@@ -26,19 +26,20 @@ const sleep = (ms) => () => new Promise(resolve => setTimeout(resolve, ms));
 client.listDevices()
 .then((devices) => {
   let device;
-  if (devices.length != 0 && ip) {
+  if (ip) {
     const id = `${ip}:5555`;
     // Loop for IP in list.
     const filteredDevices = devices.filter(e => e.id === id);
     if (filteredDevices.length > 0) {
       return filteredDevices[0];
     } else {
-      throw new Error('Device not found.');
+      return client.connect(ip)
+      // Return device object to match what adbkit returns.
+      .then(id => ({ id, type: 'device' }));
     }
-  // Only one device and no IP passed.
-  } else if (devices.length === 1 && !ip) {
+  } else if (devices.length === 1) { // Only one device and no IP passed, so just connect.
     return devices[0];
-  } else if (devices.length > 0 && !ip) {
+  } else if (devices.length > 0) { // More than one device and no IP passed, ask which device to connect to.
     return inquirer.prompt([{
       type: 'list',
       name: 'device',
