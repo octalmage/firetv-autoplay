@@ -11,7 +11,8 @@
   "dependencies": {
     "adbkit": "^2.11.0",
     "commander": "^2.17.1",
-    "inquirer": "^6.1.0"
+    "inquirer": "^6.1.0",
+    "log-timestamp": "^0.1.2"
   },
   "bin": {
     "firetv-autoplay": "index.js"

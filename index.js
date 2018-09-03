@@ -5,6 +5,7 @@ const program = require('commander');
 const inquirer = require('inquirer');
 const pjson = require('./package.json');
 const Logger = require('./logger');
+require('log-timestamp');
 
 let ip;
 const log = new Logger();
@@ -103,7 +104,7 @@ const getPlayingState = (client, device) => getCurrentApp(client, device)
     case 'com.hulu.plus':
       return getPlayingStateHulu(client, device);
     default:
-      return { device, state: STATE_UNKNOWN };
+      return { device, state: PLAYSTATE_UNKNOWN };
   }
 });
 
