@@ -126,7 +126,7 @@ const getPlayingStateNetflix = (client, device) => client.shell(device.id, 'dump
   const matches = /state=PlaybackState.*state=(\d)/gm.exec(output);
   let state = PLAYSTATE_UNKNOWN;
   if (matches) {
-    state = parseInt(matches[1])
+    state = parseInt(matches[1]);
   }
 
   return { device, state };
