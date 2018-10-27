@@ -140,10 +140,10 @@ const pressTrackball = (client, device) => client.shell(device.id, 'input press'
 .then(adb.util.readAll) // Wait for event to close.
 .then(() => { device });
 
-const getCurrentApp = (client, device) => client.shell(device.id, 'dumpsys activity activities')
+const getCurrentApp = (client, device) => client.shell(device.id, 'dumpsys activity recents')
 .then(adb.util.readAll)
 .then(function(output) {
-  const matches = /mFocusedActivity:.*(com\..*)\//g.exec(output);
+  const matches = /Recent #0.*A=(.*) U/g.exec(output);
   let app;
   if (matches) {
     app = matches[1];
