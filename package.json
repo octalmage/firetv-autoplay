@@ -12,7 +12,8 @@
     "adbkit": "^2.11.0",
     "commander": "^2.17.1",
     "inquirer": "^6.1.0",
-    "log-timestamp": "^0.1.2"
+    "log-timestamp": "^0.1.2",
+    "restify": "^7.2.1"
   },
   "bin": {
     "firetv-autoplay": "index.js"

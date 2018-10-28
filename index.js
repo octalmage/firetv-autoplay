@@ -1,11 +1,18 @@
 #!/usr/bin/env node
+
 const adb = require('adbkit');
 const client = adb.createClient();
 const program = require('commander');
 const inquirer = require('inquirer');
+const restify = require('restify');
 const pjson = require('./package.json');
 const Logger = require('./logger');
 require('log-timestamp');
+
+const server = restify.createServer({
+  name: 'firetv-autoplay',
+  version: pjson.version,
+});
 
 let ip;
 const log = new Logger();
@@ -13,9 +20,13 @@ const PLAYSTATE_UNKNOWN = 0;
 const PLAYSTATE_PAUSED = 2;
 const PLAYSTATE_PLAYING = 3;
 
+let globalState;
+let loopPaused = false;
+
 program
   .version(pjson.version)
   .arguments('[ip]')
+  .option('-a, --api', 'Enable HTTP API')
   .action(function (passedIp) {
      ip = passedIp;
   })
@@ -59,6 +70,43 @@ client.listDevices()
     throw new Error('No devices found.');
   }
 })
+.then(device => {
+  // Only start server if API flag is set.
+  if (!program.api) {
+    return device;
+  }
+
+  server.use(restify.plugins.acceptParser(server.acceptable));
+  server.use(restify.plugins.queryParser());
+  server.use(restify.plugins.bodyParser());
+
+  server.get('/input/:key', function (req, res, next) {
+    const { params: { key }} = req;
+
+    let promise = Promise.resolve();
+    if (key === '85')   {
+      if (globalState === PLAYSTATE_PLAYING) {
+        loopPaused = true;
+      } else if (globalState === PLAYSTATE_UNKNOWN) {
+        loopPaused = false;
+      }
+    }
+
+    log.info(`API: pressing ${key}`);
+    return promise
+      .then(() => pressKey(client, device, key))
+      .then(() => {
+        res.send(`key ${key} clicked!`);
+        return next();
+      });
+  });
+
+  server.listen(8811, function () {
+    console.log('%s listening at %s', server.name, server.url);
+  });
+
+  return device;
+})
 .then(device => loop(Promise.resolve(), () => playIfNotPlaying(client, device).then(sleep(1000))))
 .catch(function(err) {
   console.error('Something went wrong:', err.stack)
@@ -75,6 +123,17 @@ function loop(promise, fn) {
 // Reference: https://developer.android.com/reference/android/media/AudioTrack#PLAYSTATE_PLAYING
 const playIfNotPlaying = (client, device) => getPlayingState(client, device)
 .then(({ state, device }) => {
+  if (state === PLAYSTATE_PLAYING) {
+    globalState = PLAYSTATE_PLAYING;
+  } else {
+    globalState = PLAYSTATE_UNKNOWN;
+  }
+
+  // Listen to global variable for pausing.
+  if (loopPaused) {
+    return;
+  }
+
   if (state === PLAYSTATE_UNKNOWN) {
     log.info('Unknown state');
     return state;
@@ -132,7 +191,9 @@ const getPlayingStateNetflix = (client, device) => client.shell(device.id, 'dump
   return { device, state };
 });
 
-const pressPlay = (client, device) => client.shell(device.id, 'input keyevent 85')
+const pressPlay = (client, device) => pressKey(client, device, '85');
+
+const pressKey = (click, device, key) => client.shell(device.id, `input keyevent ${key}`)
 .then(adb.util.readAll) // Wait for event to close.
 .then(() => { device });
 
