@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-
+// @flow
 const adb = require('adbkit');
 const client = adb.createClient();
 const program = require('commander');
 const inquirer = require('inquirer');
 const restify = require('restify');
-const pjson = require('./package.json');
 const Logger = require('./logger');
+const pjson = require('../package.json');
 require('log-timestamp');
 
 const server = restify.createServer({
@@ -16,12 +16,26 @@ const server = restify.createServer({
 
 let ip;
 const log = new Logger();
+
 const PLAYSTATE_UNKNOWN = 0;
 const PLAYSTATE_PAUSED = 2;
 const PLAYSTATE_PLAYING = 3;
 
-let globalState;
+const STATE = {
+  PLAYSTATE_UNKNOWN,
+  PLAYSTATE_PAUSED,
+  PLAYSTATE_PLAYING,
+};
+
+type State = $Values<typeof STATE>;
+
+let globalState: State;
 let loopPaused = false;
+
+type Device = {
+  id: number,
+  type: 'device',
+};
 
 program
   .version(pjson.version)
@@ -32,11 +46,11 @@ program
   })
   .parse(process.argv);
 
-const sleep = (ms) => () => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms: number) => () => new Promise(resolve => setTimeout(resolve, ms));
 
 client.listDevices()
-.then((devices) => {
-  let device;
+.then((devices: Device[]) => {
+  let device: Device;
   if (ip) {
     const id = `${ip}:5555`;
     // Loop for IP in list.
@@ -85,7 +99,7 @@ client.listDevices()
 
     let promise = Promise.resolve();
     if (key === '85')   {
-      if (globalState === PLAYSTATE_PLAYING) {
+      if (globalState === 5) {
         loopPaused = true;
       } else if (globalState === PLAYSTATE_UNKNOWN) {
         loopPaused = false;

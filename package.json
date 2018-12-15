@@ -2,9 +2,12 @@
   "name": "firetv-autoplay",
   "version": "0.0.0-development",
   "description": "",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
-    "semantic-release": "semantic-release"
+    "semantic-release": "semantic-release",
+    "build": "flow-remove-types src/ -d lib/",
+    "prepublish": "npm run build",
+    "flow": "flow"
   },
   "author": "",
   "license": "MIT",
@@ -16,13 +19,15 @@
     "restify": "^7.2.1"
   },
   "bin": {
-    "firetv-autoplay": "index.js"
+    "firetv-autoplay": "lib/index.js"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/octalmage/firetv-autoplay.git"
   },
   "devDependencies": {
+    "flow-bin": "^0.87.0",
+    "flow-remove-types": "^1.2.3",
     "semantic-release": "^15.9.8"
   }
 }
