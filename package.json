@@ -7,7 +7,9 @@
     "semantic-release": "semantic-release",
     "build": "flow-remove-types src/ -d lib/",
     "prepublish": "npm run build",
-    "flow": "flow"
+    "flow": "flow",
+    "eslint": "eslint",
+    "test": "npm run eslint ./src && npm run flow"
   },
   "author": "",
   "license": "MIT",
@@ -26,6 +28,11 @@
     "url": "https://github.com/octalmage/firetv-autoplay.git"
   },
   "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.10.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-flowtype": "^3.2.0",
+    "eslint-plugin-import": "^2.14.0",
     "flow-bin": "^0.87.0",
     "flow-remove-types": "^1.2.3",
     "semantic-release": "^15.9.8"
