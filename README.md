@@ -1,4 +1,4 @@
-# firetv-autoplay
+# firetv-autoplay [![Build Status](https://travis-ci.org/octalmage/firetv-autoplay.svg?branch=master)](https://travis-ci.org/octalmage/firetv-autoplay)
 
 > Tired of the "are you still watching" prompt?
 
